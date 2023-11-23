@@ -216,25 +216,33 @@ public class Server {
 				System.out.println("New thread created for chat room: " + roomName + ", Thread ID: " + newRoomThread);
 			}
 
-			 // Send a message to the user indicating the port of the joined room
+			// Send a message to the user indicating the port of the joined room
 			out.println("You have successfully joined the room: " + roomName);
-			roomHandler.logPortUsage(roomHandler.getPort(), true); // Log assigned port
+			out.println("Chatroom reassigned to PORT: " + roomHandler.getPort()); // Notify client of the port
 		}
+
 		
 
 
 		private void leaveChatRoom() {
 			if (currentRoom != null) {
 				ChatRoomHandler roomHandler = chatRooms.get(currentRoom);
-				if (roomHandler != null) {
-					roomHandler.removeClient(out);
-					roomHandler.logPortUsage(roomHandler.getPort(), false); // Log released port
-				}
-				out.println("Left room: " + currentRoom);
-				System.out.println(clientName + " has left chat room: " + currentRoom);
+					if (roomHandler != null) {
+						roomHandler.removeClient(out);
+						out.println("Left room: " + currentRoom);
+						System.out.println(clientName + " has left chat room: " + currentRoom);
+            
+						// Check if there are no more clients in the chatroom
+						if (roomHandler.getNumberOfClients() == 0) {
+							// If there are no clients left, release the port
+							roomHandler.logPortUsage(roomHandler.getPort(), false); // Log released port
+							chatRooms.remove(currentRoom); // Remove the chatroom from the map
+						}
+					}
 				currentRoom = null;
 			}
 		}
+
 
 
         private void listChatRooms() {
